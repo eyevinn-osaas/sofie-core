@@ -1,3 +1,4 @@
+import { watchCollection } from '@sofie-automation/corelib/dist/pollingChangeStream' // OSC PATCH
 import { LeveledLogMethodFixed, LogEntry, logger } from './logging.js'
 import { protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -138,10 +139,9 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 			.toArray()
 
 		// Watch for creation/deletion of studios
-		db.collection(CollectionName.Studios)
-			.watch([], {
-				batchSize: 1,
-			})
+		watchCollection(db.collection(CollectionName.Studios), [], {
+			batchSize: 1,
+		})
 			.on('change', (change) => {
 				if (change.operationType === 'update' || change.operationType === 'replace') {
 					// These are not important

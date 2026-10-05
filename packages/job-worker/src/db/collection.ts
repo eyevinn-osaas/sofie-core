@@ -1,3 +1,4 @@
+import { watchCollection } from '@sofie-automation/corelib/dist/pollingChangeStream' // OSC PATCH
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventEmitter } from 'events'
 import { AnyBulkWriteOperation, ChangeStream, Collection as MongoCollection, FindOptions, CountOptions } from 'mongodb'
@@ -179,7 +180,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 	watch(pipeline: any[]): IChangeStream<TDoc> {
 		if (!this.#allowWatchers) throw new Error(`Watching collections is not allowed here`)
 
-		const rawStream = this.#collection.watch(pipeline, {
+		const rawStream = watchCollection<TDoc>(this.#collection as any, pipeline, {
 			batchSize: 1,
 		})
 

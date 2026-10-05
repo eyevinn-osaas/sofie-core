@@ -1,3 +1,4 @@
+import { watchCollection } from '@sofie-automation/corelib/dist/pollingChangeStream' // OSC PATCH
 import { IBlueprintPlayoutDevice, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -148,11 +149,16 @@ async function executePeripheralDeviceGenericFunction(
 		})
 	}
 
-	const watcher = context.directCollections.PeripheralDeviceCommands.rawCollection.watch([
-		{
-			$match: { [`documentKey._id`]: commandId },
-		},
-	])
+	const watcher = watchCollection(
+		context.directCollections.PeripheralDeviceCommands.rawCollection as any,
+		[
+			{
+				$match: { [`documentKey._id`]: commandId },
+			},
+		],
+		undefined,
+		{ emitInitial: true }
+	)
 	watcher.on('change', (_change) => {
 		// assume the change is something we want to look at
 		doCheckReply()

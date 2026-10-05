@@ -1,5 +1,6 @@
 import type { ChangeStreamDocument, Db, MongoClient } from 'mongodb'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+import { isChangePollingEnabled, PollingChangeStream } from './pollingChangeStream' // OSC PATCH
 
 export const CHANGE_FEED_RESTART_BACKOFF_MS = 5000
 
@@ -32,6 +33,13 @@ export async function createCollectionChangeStream(
 	db: Db,
 	collectionName: string
 ): Promise<ChangeStreamLike> {
+	// OSC PATCH: databases without change stream support (e.g. FerretDB) use a polling stream instead
+	if (isChangePollingEnabled()) {
+		const polling = new PollingChangeStream(db.collection(collectionName), {})
+		await polling.start()
+		return polling as unknown as ChangeStreamLike
+	}
+
 	const session = client.startSession()
 	try {
 		// A no-op command populates the session's operationTime with the current cluster time

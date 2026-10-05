@@ -1,3 +1,4 @@
+import { watchCollection } from '@sofie-automation/corelib/dist/pollingChangeStream' // OSC PATCH
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ChangeStream, ChangeStreamDocument, Document, MongoClient } from 'mongodb'
 import { LocksManager } from '../locks.js'
@@ -130,7 +131,7 @@ export class StudioWorkerSet {
 
 		const database = this.#mongoClient.db(dbName)
 		attachChangesStream<DBStudio>(
-			database.collection(CollectionName.Studios).watch([{ $match: { [`documentKey._id`]: this.#studioId } }], {
+			watchCollection(database.collection(CollectionName.Studios), [{ $match: { [`documentKey._id`]: this.#studioId } }], {
 				batchSize: 1,
 			}),
 			`Studio "${this.#studioId}"`,
@@ -140,7 +141,7 @@ export class StudioWorkerSet {
 		)
 		attachChangesStream<Blueprint>(
 			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.Blueprints).watch(
+			watchCollection(database.collection(CollectionName.Blueprints), 
 				[
 					// Future: this should be scoped down when we have multiple studios in an installation
 				],
@@ -157,7 +158,7 @@ export class StudioWorkerSet {
 		)
 		attachChangesStream<DBShowStyleBase>(
 			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleBases).watch(
+			watchCollection(database.collection(CollectionName.ShowStyleBases), 
 				[
 					// Future: this should be scoped down when we have multiple studios in an installation
 				],
@@ -174,7 +175,7 @@ export class StudioWorkerSet {
 		)
 		attachChangesStream<DBShowStyleVariant>(
 			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleVariants).watch(
+			watchCollection(database.collection(CollectionName.ShowStyleVariants), 
 				[
 					// Future: this should be scoped down when we have multiple studios in an installation
 				],
